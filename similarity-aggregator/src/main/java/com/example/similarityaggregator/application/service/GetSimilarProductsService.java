@@ -51,7 +51,7 @@ public class GetSimilarProductsService implements GetSimilarProductsUseCase {
                     return Mono.empty();
                 })
                 .onErrorResume(e -> {
-                    log.warn("Unexpected error fetching product {}: {}", productId, e.getMessage());
+                    log.error("Unexpected error fetching product {}: {}", productId, e.getMessage());
                     return Mono.empty();
                 });
     }

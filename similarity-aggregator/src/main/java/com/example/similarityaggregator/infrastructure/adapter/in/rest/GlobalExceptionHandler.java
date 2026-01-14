@@ -1,6 +1,7 @@
 package com.example.similarityaggregator.infrastructure.adapter.in.rest;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
+import io.netty.handler.timeout.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -17,5 +18,17 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public void handleProductNotFound(ProductNotFoundException ex) {
         log.info("Product not found: {}", ex.getProductId());
+    }
+
+    @ExceptionHandler(TimeoutException.class)
+    @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
+    public void handleTimeout(TimeoutException ex) {
+        log.error("Upstream timeout: {}", ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public void handleGenericException(Exception ex) {
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
     }
 }
