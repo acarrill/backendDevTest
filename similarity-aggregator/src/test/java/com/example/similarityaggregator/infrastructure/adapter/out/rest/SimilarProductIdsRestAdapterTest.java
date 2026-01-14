@@ -15,6 +15,8 @@ import reactor.test.StepVerifier;
 import java.io.IOException;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 class SimilarProductIdsRestAdapterTest {
 
     private static final String EXISTING_PRODUCT_ID = "1";
@@ -39,6 +41,23 @@ class SimilarProductIdsRestAdapterTest {
     }
 
     @Test
+    @DisplayName("Should call correct URL")
+    void shouldCallCorrectUrl() throws InterruptedException {
+        // Given
+        enqueueSuccessResponse("[\"2\", \"3\", \"4\"]");
+
+        // When
+        StepVerifier.create(adapter.getSimilarIds("1"))
+                .expectNextCount(1)
+                .verifyComplete();
+
+        // Then
+        var request = mockWebServer.takeRequest();
+        assertThat(request.getPath()).isEqualTo("/product/1/similarids");
+        assertThat(request.getMethod()).isEqualTo("GET");
+    }
+
+    @Test
     @DisplayName("Should return similar product ids")
     void shouldReturnSimilarProductIds() {
         // Given
@@ -60,6 +79,18 @@ class SimilarProductIdsRestAdapterTest {
         StepVerifier.create(adapter.getSimilarIds(NON_EXISTING_PRODUCT_ID))
                 .expectError(ProductNotFoundException.class)
                 .verify();
+    }
+
+    @Test
+    @DisplayName("Should return empty list when response body is empty array")
+    void shouldReturnEmptyListWhenResponseBodyIsEmptyArray() {
+        // Given
+        enqueueSuccessResponse("[]");
+
+        // When & Then
+        StepVerifier.create(adapter.getSimilarIds(EXISTING_PRODUCT_ID))
+                .expectNext(List.of())
+                .verifyComplete();
     }
 
     private void enqueueSuccessResponse(String body) {
