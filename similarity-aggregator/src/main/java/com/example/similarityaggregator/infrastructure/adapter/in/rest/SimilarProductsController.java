@@ -1,4 +1,3 @@
-// infrastructure/adapter/in/rest/SimilarProductsController.java
 package com.example.similarityaggregator.infrastructure.adapter.in.rest;
 
 import com.example.similarityaggregator.application.port.in.GetSimilarProductsUseCase;

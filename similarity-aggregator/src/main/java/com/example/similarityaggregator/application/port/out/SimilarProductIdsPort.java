@@ -1,4 +1,3 @@
-// application/port/out/SimilarProductIdsPort.java
 package com.example.similarityaggregator.application.port.out;
 
 import reactor.core.publisher.Mono;

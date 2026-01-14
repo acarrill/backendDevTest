@@ -1,4 +1,3 @@
-// src/test/java/com/example/similarityaggregator/infrastructure/adapter/out/rest/ProductDetailRestAdapterTest.java
 package com.example.similarityaggregator.infrastructure.adapter.out.rest;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;

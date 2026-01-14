@@ -1,4 +1,3 @@
-// infrastructure/adapter/in/rest/GlobalExceptionHandler.java
 package com.example.similarityaggregator.infrastructure.adapter.in.rest;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;

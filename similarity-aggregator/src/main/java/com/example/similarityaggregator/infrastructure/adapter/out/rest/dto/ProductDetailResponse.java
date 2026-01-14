@@ -1,4 +1,3 @@
-// infrastructure/adapter/out/rest/dto/ProductDto.java
 package com.example.similarityaggregator.infrastructure.adapter.out.rest.dto;
 
 import com.example.similarityaggregator.domain.model.Product;

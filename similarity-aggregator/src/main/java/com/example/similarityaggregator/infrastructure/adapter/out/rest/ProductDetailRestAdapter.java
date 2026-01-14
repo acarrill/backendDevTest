@@ -1,4 +1,3 @@
-// infrastructure/adapter/out/rest/ProductDetailRestAdapter.java
 package com.example.similarityaggregator.infrastructure.adapter.out.rest;
 
 import com.example.similarityaggregator.application.port.out.ProductDetailPort;
