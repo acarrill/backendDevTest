@@ -32,7 +32,6 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j'
 	testImplementation 'org.springframework.boot:spring-boot-starter-webflux-test'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'io.projectreactor:reactor-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
@@ -45,4 +44,34 @@ dependencyManagement {
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+test {
+    useJUnitPlatform()
+
+    testLogging {
+        events "passed", "skipped", "failed"
+        showExceptions true
+        showCauses true
+        showStackTraces true
+        exceptionFormat "full"
+        showStandardStreams false
+
+        afterTest { desc, result ->
+            println "${result.resultType} - ${desc.className} > ${desc.name}"
+        }
+
+        afterSuite { desc, result ->
+            if (!desc.parent) {
+                println "\n=========================================="
+                println "Test Results: ${result.resultType}"
+                println "=========================================="
+                println "Tests:  ${result.testCount}"
+                println "Passed: ${result.successfulTestCount}"
+                println "Failed: ${result.failedTestCount}"
+                println "Skipped: ${result.skippedTestCount}"
+                println "==========================================\n"
+            }
+        }
+    }
 }

@@ -2,6 +2,7 @@ package com.example.similarityaggregator.infrastructure.adapter.in.rest;
 
 
 import com.example.similarityaggregator.application.port.in.GetSimilarProductsUseCase;
+import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
 import com.example.similarityaggregator.infrastructure.adapter.in.rest.dto.ProductResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -46,5 +47,21 @@ class SimilarProductsControllerTest {
                 .expectBodyList(ProductResponse.class)
                 .hasSize(1)
                 .contains(new ProductResponse("2", "Product 2", new BigDecimal("19.99"), true));
+    }
+
+    @Test
+    @DisplayName("Should return 404 if product not found")
+    void shouldReturnNotFound() {
+        // Given
+        String productId = "1";
+
+        when(getSimilarProductsUseCase.getSimilarProducts(productId))
+                .thenReturn(Mono.error(new ProductNotFoundException(productId)));
+
+        // When & Then
+        webTestClient.get()
+                .uri("/product/{productId}/similar", productId)
+                .exchange()
+                .expectStatus().isNotFound();
     }
 }
