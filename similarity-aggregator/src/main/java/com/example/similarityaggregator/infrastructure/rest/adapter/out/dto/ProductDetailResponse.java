@@ -1,4 +1,4 @@
-package com.example.similarityaggregator.infrastructure.adapter.out.rest.dto;
+package com.example.similarityaggregator.infrastructure.rest.adapter.out.dto;
 
 import com.example.similarityaggregator.domain.model.Product;
 

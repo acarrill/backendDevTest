@@ -1,4 +1,4 @@
-package com.example.similarityaggregator.infrastructure.config;
+package com.example.similarityaggregator.infrastructure.rest.config;
 
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;

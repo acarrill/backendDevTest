@@ -1,7 +1,7 @@
-package com.example.similarityaggregator.infrastructure.adapter.out.rest;
+package com.example.similarityaggregator.infrastructure.res.adapter.out;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
-import com.example.similarityaggregator.domain.model.Product;
+import com.example.similarityaggregator.infrastructure.rest.adapter.out.SimilarProductIdsRestAdapter;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -12,18 +12,20 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.test.StepVerifier;
-import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.math.BigDecimal;
+import java.util.List;
 
-class ProductDetailRestAdapterTest {
+import static org.assertj.core.api.Assertions.assertThat;
+
+class SimilarProductIdsRestAdapterTest {
 
     private static final String EXISTING_PRODUCT_ID = "1";
     private static final String NON_EXISTING_PRODUCT_ID = "999";
+    private static final List<String> SIMILAR_IDS = List.of("2", "3", "4");
 
     private MockWebServer mockWebServer;
-    private ProductDetailRestAdapter adapter;
+    private SimilarProductIdsRestAdapter adapter;
 
     @BeforeEach
     void setUp() throws IOException {
@@ -31,7 +33,7 @@ class ProductDetailRestAdapterTest {
         mockWebServer.start();
 
         String baseUrl = mockWebServer.url("/").toString();
-        adapter = new ProductDetailRestAdapter(WebClient.builder(), baseUrl);
+        adapter = new SimilarProductIdsRestAdapter(WebClient.builder(), baseUrl);
     }
 
     @AfterEach
@@ -43,44 +45,28 @@ class ProductDetailRestAdapterTest {
     @DisplayName("Should call correct URL")
     void shouldCallCorrectUrl() throws InterruptedException {
         // Given
-        enqueueSuccessResponse("""
-            {
-                "id": "1",
-                "name": "Product 1",
-                "price": 19.99,
-                "availability": true
-            }
-            """);
+        enqueueSuccessResponse("[\"2\", \"3\", \"4\"]");
 
         // When
-        StepVerifier.create(adapter.getProductDetail("1"))
+        StepVerifier.create(adapter.getSimilarIds("1"))
                 .expectNextCount(1)
                 .verifyComplete();
 
         // Then
         var request = mockWebServer.takeRequest();
-        assertThat(request.getPath()).isEqualTo("/product/1");
+        assertThat(request.getPath()).isEqualTo("/product/1/similarids");
         assertThat(request.getMethod()).isEqualTo("GET");
     }
 
     @Test
-    @DisplayName("Should return product detail")
-    void shouldReturnProductDetail() {
+    @DisplayName("Should return similar product ids")
+    void shouldReturnSimilarProductIds() {
         // Given
-        enqueueSuccessResponse("""
-                {
-                    "id": "1",
-                    "name": "Product 1",
-                    "price": 19.99,
-                    "availability": true
-                }
-                """);
-
-        Product expected = new Product("1", "Product 1", new BigDecimal("19.99"), true);
+        enqueueSuccessResponse("[\"2\", \"3\", \"4\"]");
 
         // When & Then
-        StepVerifier.create(adapter.getProductDetail(EXISTING_PRODUCT_ID))
-                .expectNext(expected)
+        StepVerifier.create(adapter.getSimilarIds(EXISTING_PRODUCT_ID))
+                .expectNext(SIMILAR_IDS)
                 .verifyComplete();
     }
 
@@ -91,9 +77,21 @@ class ProductDetailRestAdapterTest {
         enqueueNotFoundResponse();
 
         // When & Then
-        StepVerifier.create(adapter.getProductDetail(NON_EXISTING_PRODUCT_ID))
+        StepVerifier.create(adapter.getSimilarIds(NON_EXISTING_PRODUCT_ID))
                 .expectError(ProductNotFoundException.class)
                 .verify();
+    }
+
+    @Test
+    @DisplayName("Should return empty list when response body is empty array")
+    void shouldReturnEmptyListWhenResponseBodyIsEmptyArray() {
+        // Given
+        enqueueSuccessResponse("[]");
+
+        // When & Then
+        StepVerifier.create(adapter.getSimilarIds(EXISTING_PRODUCT_ID))
+                .expectNext(List.of())
+                .verifyComplete();
     }
 
     private void enqueueSuccessResponse(String body) {
@@ -102,22 +100,7 @@ class ProductDetailRestAdapterTest {
                 .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE));
     }
 
-    @Test
-    @DisplayName("Should return empty when response body is empty")
-    void shouldReturnEmptyWhenResponseBodyIsEmpty() {
-        // Given
-        mockWebServer.enqueue(new MockResponse()
-                .setResponseCode(200)
-                .addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .setBody(""));
-
-        // When & Then
-        StepVerifier.create(adapter.getProductDetail(EXISTING_PRODUCT_ID))
-                .verifyComplete();
-    }
-
     private void enqueueNotFoundResponse() {
         mockWebServer.enqueue(new MockResponse().setResponseCode(404));
     }
-
 }

@@ -1,6 +1,6 @@
 package com.example.similarityaggregator.integration;
 
-import com.example.similarityaggregator.infrastructure.config.SimilarProductsApiProperties;
+import com.example.similarityaggregator.infrastructure.rest.config.SimilarProductsApiProperties;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

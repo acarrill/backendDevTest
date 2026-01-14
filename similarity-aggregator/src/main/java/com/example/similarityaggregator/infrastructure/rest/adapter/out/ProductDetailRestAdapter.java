@@ -1,9 +1,9 @@
-package com.example.similarityaggregator.infrastructure.adapter.out.rest;
+package com.example.similarityaggregator.infrastructure.rest.adapter.out;
 
 import com.example.similarityaggregator.application.port.out.ProductDetailPort;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
-import com.example.similarityaggregator.infrastructure.adapter.out.rest.dto.ProductDetailResponse;
+import com.example.similarityaggregator.infrastructure.rest.adapter.out.dto.ProductDetailResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

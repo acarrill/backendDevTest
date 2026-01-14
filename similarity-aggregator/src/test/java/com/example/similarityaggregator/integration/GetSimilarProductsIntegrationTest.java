@@ -1,6 +1,6 @@
 package com.example.similarityaggregator.integration;
 
-import com.example.similarityaggregator.infrastructure.config.SimilarProductsApiProperties;
+import com.example.similarityaggregator.infrastructure.rest.config.SimilarProductsApiProperties;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterEach;
@@ -16,7 +16,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
