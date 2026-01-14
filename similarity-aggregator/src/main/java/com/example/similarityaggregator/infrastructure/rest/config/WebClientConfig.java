@@ -1,5 +1,6 @@
 package com.example.similarityaggregator.infrastructure.rest.config;
 
+import com.example.similarityaggregator.infrastructure.rest.filter.WebClientTimingFilter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -17,6 +18,7 @@ public class WebClientConfig {
                 .responseTimeout(properties.timeout());
 
         return WebClient.builder()
-                .clientConnector(new ReactorClientHttpConnector(httpClient));
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .filter(new WebClientTimingFilter());
     }
 }
