@@ -4,11 +4,11 @@ package com.example.similarityaggregator.infrastructure.rest.adapter.in;
 import com.example.similarityaggregator.application.port.in.GetSimilarProductsUseCase;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
-import com.example.similarityaggregator.infrastructure.rest.adapter.in.SimilarProductsController;
 import com.example.similarityaggregator.infrastructure.rest.adapter.in.dto.ProductResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration;
 import org.springframework.boot.webflux.test.autoconfigure.WebFluxTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -19,7 +19,10 @@ import java.util.List;
 
 import static org.mockito.Mockito.when;
 
-@WebFluxTest(SimilarProductsController.class)
+@WebFluxTest(
+        controllers = SimilarProductsController.class,
+        excludeAutoConfiguration = CacheAutoConfiguration.class
+)
 class SimilarProductsControllerTest {
 
     @Autowired

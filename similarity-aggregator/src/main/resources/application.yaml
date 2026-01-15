@@ -3,6 +3,7 @@ spring:
     name: similarity-aggregator
   cache:
     type: caffeine
+    enabled: true
     caffeine:
       spec: maximumSize=500,expireAfterAccess=10s
 
