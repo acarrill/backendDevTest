@@ -12,16 +12,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
 import java.io.IOException;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureWebTestClient
-@ActiveProfiles("test")
 class GetSimilarProductsIntegrationTest {
 
     private static MockWebServer mockWebServer;
@@ -129,4 +126,6 @@ class GetSimilarProductsIntegrationTest {
                 .jsonPath("$.length()").isEqualTo(1)
                 .jsonPath("$[0].id").isEqualTo("2");
     }
+
+
 }

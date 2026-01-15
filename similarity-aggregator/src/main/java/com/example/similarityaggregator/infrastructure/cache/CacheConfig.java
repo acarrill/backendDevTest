@@ -1,4 +1,4 @@
-package com.example.similarityaggregator.infrastructure.rest.config;
+package com.example.similarityaggregator.infrastructure.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.cache.CacheManager;

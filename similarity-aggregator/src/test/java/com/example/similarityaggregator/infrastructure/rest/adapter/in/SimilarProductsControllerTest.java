@@ -1,4 +1,4 @@
-package com.example.similarityaggregator.infrastructure.res.adapter.in;
+package com.example.similarityaggregator.infrastructure.rest.adapter.in;
 
 
 import com.example.similarityaggregator.application.port.in.GetSimilarProductsUseCase;
