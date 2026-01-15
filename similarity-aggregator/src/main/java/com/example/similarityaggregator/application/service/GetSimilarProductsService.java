@@ -7,6 +7,7 @@ import com.example.similarityaggregator.domain.exception.ProductNotFoundExceptio
 import com.example.similarityaggregator.domain.model.Product;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -28,6 +29,7 @@ public class GetSimilarProductsService implements GetSimilarProductsUseCase {
     }
 
     @Override
+    @Cacheable(value = "product-details", key = "#productId")
     public Mono<List<Product>> getSimilarProducts(String productId) {
         log.info("Fetching similar products for productId={}", productId);
 
@@ -35,12 +37,13 @@ public class GetSimilarProductsService implements GetSimilarProductsUseCase {
                 .doOnNext(ids -> log.debug("Found {} similar ids", ids.size()))
                 .flatMapMany(this::fetchProductsPreservingOrder)
                 .collectList()
-                .doOnSuccess(products -> log.info("Returning {} products for productId={}", products.size(), productId));
+                .doOnSuccess(products -> log.info("Returning {} products for productId={}", products.size(), productId))
+                .cache();
     }
 
     private Flux<Product> fetchProductsPreservingOrder(List<String> productIds) {
         return Flux.fromIterable(productIds)
-                .flatMapSequential(this::fetchProductOrSkip);
+                .flatMapSequential(this::fetchProductOrSkip, 10);
     }
 
     private Mono<Product> fetchProductOrSkip(String productId) {

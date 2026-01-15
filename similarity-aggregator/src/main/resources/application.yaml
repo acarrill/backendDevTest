@@ -1,6 +1,8 @@
 spring:
   application:
     name: similarity-aggregator
+  cache:
+    type: caffeine
 
 server:
   port: 5000
@@ -9,3 +11,4 @@ similar-products:
   api:
     base-url: http://localhost:3001
     timeout: 2s
+
