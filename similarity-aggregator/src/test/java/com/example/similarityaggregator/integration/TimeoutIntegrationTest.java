@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.reactive.server.WebTestClient;
 
@@ -19,6 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @AutoConfigureWebTestClient
 @WireMockTest(httpPort = 3001)
 @TestPropertySource(properties = "spring.cache.type=none")
+@ActiveProfiles("test")
 class TimeoutIntegrationTest {
 
     private static final Logger log = LoggerFactory.getLogger(TimeoutIntegrationTest.class);

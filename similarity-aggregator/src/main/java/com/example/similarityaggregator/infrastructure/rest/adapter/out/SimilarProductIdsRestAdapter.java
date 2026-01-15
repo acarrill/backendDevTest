@@ -2,6 +2,8 @@ package com.example.similarityaggregator.infrastructure.rest.adapter.out;
 
 import com.example.similarityaggregator.application.port.out.SimilarProductIdsPort;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
+import com.example.similarityaggregator.infrastructure.rest.exception.ServiceUnavailableException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +29,7 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
 
     @Override
     @Cacheable(value = "similar-ids", key = "#productId")
+    @CircuitBreaker(name = "similarIds", fallbackMethod = "fallbackSimilarIds")
     public Mono<List<String>> getSimilarIds(String productId) {
         log.info("Fetching similar ids for productId={}", productId);
 
@@ -38,5 +41,15 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
                 .doOnNext(ids -> log.info("Found {} similar ids for productId={}", ids.size(), productId))
                 .onErrorResume(WebClientResponseException.NotFound.class,
                         e -> Mono.error(new ProductNotFoundException(productId)));
+    }
+
+    private Mono<List<String>> fallbackSimilarIds(String productId, Throwable t) {
+        log.info("This is the exception type: {}", t.getClass());
+        if (t instanceof ProductNotFoundException) {
+            return Mono.error(new ProductNotFoundException(productId));
+        }
+
+        log.warn("Fallback for similarIds, productId={}, error={}", productId, t.getMessage());
+        return Mono.error(new ServiceUnavailableException("Service unavailable"));
     }
 }
