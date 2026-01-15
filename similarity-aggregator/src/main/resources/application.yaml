@@ -1,8 +1,6 @@
 spring:
   application:
     name: similarity-aggregator
-  cache:
-    type: caffeine
 
 server:
   port: 5000
