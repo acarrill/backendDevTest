@@ -1,6 +1,10 @@
 spring:
   application:
     name: similarity-aggregator
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=10s
 
 server:
   port: 5000
