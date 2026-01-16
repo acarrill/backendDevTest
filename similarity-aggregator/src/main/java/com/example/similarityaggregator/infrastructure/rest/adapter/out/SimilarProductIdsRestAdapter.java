@@ -45,15 +45,7 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
     }
 
     public Mono<List<String>> fallbackSimilarIds(String productId, Throwable t) {
-        if (t instanceof CallNotPermittedException) {
-            return Mono.error(new ServiceUnavailableException("Circuit breaker is open"));
-        }
-
-        if (t instanceof ProductNotFoundException) {
-            return Mono.error(t);
-        }
-
-        log.error("Unexpected error in similarIds, productId={}", productId, t);
-        return Mono.error(new ServiceUnavailableException("Unexpected dependency failure"));
+        log.error("Circuit breaker fallback similarIds, productId={}", productId, t);
+        return Mono.error(t);
     }
 }

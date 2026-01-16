@@ -45,14 +45,6 @@ public class ProductDetailRestAdapter implements ProductDetailPort {
     }
 
     public Mono<Product> fallbackProductDetail(String productId, Throwable t) {
-        if (t instanceof CallNotPermittedException) {
-            return Mono.error(new ServiceUnavailableException("Circuit breaker is open"));
-        }
-
-        if (t instanceof ProductNotFoundException) {
-            return Mono.error(t);
-        }
-
         log.error("Circuit breaker fallback for productDetail, productId={}, error={}", productId, t.getMessage());
         return Mono.empty();
     }

@@ -1,7 +1,6 @@
 package com.example.similarityaggregator.infrastructure.rest.adapter.in;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
-import com.example.similarityaggregator.infrastructure.rest.exception.ServiceUnavailableException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.netty.handler.timeout.TimeoutException;
 import org.slf4j.Logger;
@@ -28,7 +27,7 @@ public class GlobalExceptionHandler {
         log.error("Upstream timeout: {}", ex.getMessage());
     }
 
-    @ExceptionHandler({ServiceUnavailableException.class, CallNotPermittedException.class})
+    @ExceptionHandler(CallNotPermittedException.class)
     @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
     public void handleServiceUnavailable(Exception ex) {
         log.error("Service unavailable: {}", ex.getMessage());
