@@ -3,6 +3,7 @@ package com.example.similarityaggregator.infrastructure.rest.adapter.out;
 import com.example.similarityaggregator.application.port.out.SimilarProductIdsPort;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.infrastructure.rest.exception.ServiceUnavailableException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,13 +44,16 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
                         e -> Mono.error(new ProductNotFoundException(productId)));
     }
 
-    private Mono<List<String>> fallbackSimilarIds(String productId, Throwable t) {
-        log.info("This is the exception type: {}", t.getClass());
-        if (t instanceof ProductNotFoundException) {
-            return Mono.error(new ProductNotFoundException(productId));
+    public Mono<List<String>> fallbackSimilarIds(String productId, Throwable t) {
+        if (t instanceof CallNotPermittedException) {
+            return Mono.error(new ServiceUnavailableException("Circuit breaker is open"));
         }
 
-        log.warn("Fallback for similarIds, productId={}, error={}", productId, t.getMessage());
-        return Mono.error(new ServiceUnavailableException("Service unavailable"));
+        if (t instanceof ProductNotFoundException) {
+            return Mono.error(t);
+        }
+
+        log.error("Unexpected error in similarIds, productId={}", productId, t);
+        return Mono.error(new ServiceUnavailableException("Unexpected dependency failure"));
     }
 }

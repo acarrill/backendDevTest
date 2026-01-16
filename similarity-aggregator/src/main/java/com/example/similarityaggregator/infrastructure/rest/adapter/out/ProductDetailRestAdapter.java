@@ -4,6 +4,8 @@ import com.example.similarityaggregator.application.port.out.ProductDetailPort;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
 import com.example.similarityaggregator.infrastructure.rest.adapter.out.dto.ProductDetailResponse;
+import com.example.similarityaggregator.infrastructure.rest.exception.ServiceUnavailableException;
+import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,8 +44,16 @@ public class ProductDetailRestAdapter implements ProductDetailPort {
                         e -> Mono.error(new ProductNotFoundException(productId)));
     }
 
-    private Mono<Product> fallbackProductDetail(String productId, Throwable t) {
-        log.warn("Circuit breaker fallback for productDetail, productId={}, error={}", productId, t.getMessage());
+    public Mono<Product> fallbackProductDetail(String productId, Throwable t) {
+        if (t instanceof CallNotPermittedException) {
+            return Mono.error(new ServiceUnavailableException("Circuit breaker is open"));
+        }
+
+        if (t instanceof ProductNotFoundException) {
+            return Mono.error(t);
+        }
+
+        log.error("Circuit breaker fallback for productDetail, productId={}, error={}", productId, t.getMessage());
         return Mono.empty();
     }
 }
