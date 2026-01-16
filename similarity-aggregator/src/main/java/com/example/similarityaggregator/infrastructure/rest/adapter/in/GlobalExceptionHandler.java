@@ -2,13 +2,15 @@ package com.example.similarityaggregator.infrastructure.rest.adapter.in;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
-import io.netty.handler.timeout.TimeoutException;
+import io.netty.handler.timeout.ReadTimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,10 +23,15 @@ public class GlobalExceptionHandler {
         log.info("Product not found: {}", ex.getProductId());
     }
 
-    @ExceptionHandler(TimeoutException.class)
-    @ResponseStatus(HttpStatus.GATEWAY_TIMEOUT)
-    public void handleTimeout(TimeoutException ex) {
-        log.error("Upstream timeout: {}", ex.getMessage());
+    @ExceptionHandler(WebClientRequestException.class)
+    public ResponseEntity<Void> handleWebClientException(WebClientRequestException ex) {
+        if (ex.getCause() instanceof ReadTimeoutException) {
+            log.error("Upstream request timeout - URI: {}", ex.getUri());
+            return ResponseEntity.status(HttpStatus.GATEWAY_TIMEOUT).build();
+        }
+
+        log.error("Upstream connection error: {}", ex.getUri());
+        return ResponseEntity.status(HttpStatus.BAD_GATEWAY).build();
     }
 
     @ExceptionHandler(CallNotPermittedException.class)

@@ -4,8 +4,6 @@ import com.example.similarityaggregator.application.port.out.ProductDetailPort;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
 import com.example.similarityaggregator.infrastructure.rest.adapter.out.dto.ProductDetailResponse;
-import com.example.similarityaggregator.infrastructure.rest.exception.ServiceUnavailableException;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

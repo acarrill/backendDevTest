@@ -2,8 +2,6 @@ package com.example.similarityaggregator.infrastructure.rest.adapter.out;
 
 import com.example.similarityaggregator.application.port.out.SimilarProductIdsPort;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
-import com.example.similarityaggregator.infrastructure.rest.exception.ServiceUnavailableException;
-import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +43,7 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
     }
 
     public Mono<List<String>> fallbackSimilarIds(String productId, Throwable t) {
-        log.error("Circuit breaker fallback similarIds, productId={}", productId, t);
+        log.error("Circuit breaker fallback similarIds, productId={}", productId, t.getMessage());
         return Mono.error(t);
     }
 }
