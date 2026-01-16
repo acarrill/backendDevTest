@@ -38,7 +38,7 @@
     <logger name="com.example.similarityaggregator.infrastructure.rest.filter" level="INFO"/>
 
     <!-- Third Party Loggers -->
-    <logger name="io.github.resilience4j" level="DEBUG"/>
+    <logger name="io.github.resilience4j" level="INFO"/>
     <logger name="org.springframework.web.reactive" level="INFO"/>
     <logger name="org.springframework.cache" level="DEBUG"/>
     <logger name="reactor.netty" level="INFO"/>
