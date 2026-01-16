@@ -5,7 +5,7 @@ spring:
     type: caffeine
     enabled: true
     caffeine:
-      spec: maximumSize=500,expireAfterAccess=10s
+      spec: maximumSize=500,expireAfterAccess=60s
 
 server:
   port: 5000
@@ -13,14 +13,14 @@ server:
 similar-products:
   api:
     base-url: http://localhost:3001
-    timeout: 2s
+    timeout: 5s
 
 resilience4j:
   circuitbreaker:
     instances:
       similarIds:
         registerHealthIndicator: true
-        slidingWindowSize: 100
+        slidingWindowSize: 50
         minimumNumberOfCalls: 20
         failureRateThreshold: 50
         waitDurationInOpenState: 5s
@@ -31,13 +31,16 @@ resilience4j:
           - com.example.similarityaggregator.domain.exception.ProductNotFoundException
       productDetail:
         registerHealthIndicator: true
-        slidingWindowSize: 100
+        slidingWindowSize: 50
         minimumNumberOfCalls: 20
         failureRateThreshold: 50
         waitDurationInOpenState: 5s
         permittedNumberOfCallsInHalfOpenState: 5
         slowCallDurationThreshold: 2s
         slowCallRateThreshold: 80
+        ignore-exceptions:
+          - com.example.similarityaggregator.domain.exception.ProductNotFoundException
+
 
 management:
   endpoints:

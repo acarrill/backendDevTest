@@ -43,7 +43,7 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
     }
 
     public Mono<List<String>> fallbackSimilarIds(String productId, Throwable t) {
-        log.error("Circuit breaker fallback similarIds, productId={}", productId, t.getMessage());
+        log.error("Circuit breaker fallback similarIds, productId={}, error={}", productId, t.getMessage());
         return Mono.error(t);
     }
 }

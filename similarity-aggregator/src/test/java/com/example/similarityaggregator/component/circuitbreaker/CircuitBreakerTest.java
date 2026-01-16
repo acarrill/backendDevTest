@@ -1,5 +1,7 @@
 package com.example.similarityaggregator.component.circuitbreaker;
 
+import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
+import com.example.similarityaggregator.infrastructure.rest.adapter.out.ProductDetailRestAdapter;
 import com.example.similarityaggregator.infrastructure.rest.adapter.out.SimilarProductIdsRestAdapter;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockTest;
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -22,31 +26,43 @@ import static org.assertj.core.api.Assertions.assertThat;
         "resilience4j.circuitbreaker.instances.similarIds.minimumNumberOfCalls=2",
         "resilience4j.circuitbreaker.instances.similarIds.failureRateThreshold=50",
         "resilience4j.circuitbreaker.instances.similarIds.waitDurationInOpenState=10s",
-        "resilience4j.circuitbreaker.instances.similarIds.permitted-number-of-calls-in-half-open-state: 1"
+        "resilience4j.circuitbreaker.instances.similarIds.permitted-number-of-calls-in-half-open-state=1",
+        "resilience4j.circuitbreaker.instances.productDetail.slidingWindowSize=4",
+        "resilience4j.circuitbreaker.instances.productDetail.minimumNumberOfCalls=2",
+        "resilience4j.circuitbreaker.instances.productDetail.failureRateThreshold=50",
+        "resilience4j.circuitbreaker.instances.productDetail.waitDurationInOpenState=10s",
+        "resilience4j.circuitbreaker.instances.productDetail.permitted-number-of-calls-in-half-open-state=1"
 })
 @WireMockTest(httpPort = 3001)
 class CircuitBreakerTest {
 
     @Autowired
-    private SimilarProductIdsRestAdapter adapter;
+    private SimilarProductIdsRestAdapter similarProductIdsRestAdapter;
+
+    @Autowired
+    private ProductDetailRestAdapter productDetailAdapter;
 
     @Autowired
     private CircuitBreakerRegistry circuitBreakerRegistry;
 
-    private CircuitBreaker circuitBreaker;
+    private CircuitBreaker similarIdsCircuitBreaker;
+
+    private CircuitBreaker productDetailCircuitBreaker;
 
     @BeforeEach
     void setUp() {
         WireMock.reset();
-        circuitBreaker = circuitBreakerRegistry.circuitBreaker("similarIds");
-        circuitBreaker.reset();
+        similarIdsCircuitBreaker = circuitBreakerRegistry.circuitBreaker("similarIds");
+        productDetailCircuitBreaker = circuitBreakerRegistry.circuitBreaker("productDetail");
+        similarIdsCircuitBreaker.reset();
+        productDetailCircuitBreaker.reset();
     }
 
     @Test
     @Order(1)
     @DisplayName("Should be closed initially")
     void shouldBeClosedInitially() {
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
     }
 
     @Test
@@ -60,13 +76,13 @@ class CircuitBreakerTest {
 
         // When
         for (int i = 0; i < 5; i++) {
-            StepVerifier.create(adapter.getSimilarIds("1"))
+            StepVerifier.create(similarProductIdsRestAdapter.getSimilarIds("1"))
                     .expectNextCount(1)
                     .verifyComplete();
         }
 
         // Then
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
     }
 
     @Test
@@ -79,25 +95,66 @@ class CircuitBreakerTest {
         // When
         int minimumCalls = 4;
         for (int i = 0; i < minimumCalls; i++) {
-            adapter.getSimilarIds(String.valueOf(i))
+            similarProductIdsRestAdapter.getSimilarIds(String.valueOf(i))
                     .onErrorComplete()
                     .block();
         }
 
         // Then
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
+    }
+
+    @Test
+    @DisplayName("Should ignore Not Found errors and stay CLOSED")
+    void shouldStayClosedOnConsecutiveNotFoundSimilarIds() {
+        // Given
+        stubFor(get(urlPathMatching("/product/.*/similarids"))
+                .willReturn(notFound()));
+
+        final int totalCalls = similarIdsCircuitBreaker.getCircuitBreakerConfig()
+                .getMinimumNumberOfCalls() + 5;
+
+        // When
+        StepVerifier.create(
+            Flux.range(0, totalCalls)
+                .flatMap(i -> similarProductIdsRestAdapter.getSimilarIds(String.valueOf(i))
+                    .onErrorResume(ProductNotFoundException.class, e -> Mono.empty())
+                ).then()
+        ).verifyComplete();
+
+        // Then
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
+        assertThat(similarIdsCircuitBreaker.getMetrics().getNumberOfFailedCalls()).isZero();
+    }
+
+    @Test
+    @DisplayName("Should stay closed on not found errors in product detail")
+    void shouldStayClosedOnConsecutiveNotFoundProductDetail() {
+        stubFor(get(urlPathMatching("/product/1"))
+                .willReturn(aResponse().withStatus(404)));
+
+        final int totalCalls = similarIdsCircuitBreaker.getCircuitBreakerConfig().getMinimumNumberOfCalls() + 5;
+
+        Flux.range(0, totalCalls)
+                .flatMap(i -> productDetailAdapter.getProductDetail(String.valueOf(i))
+                        .onErrorComplete())
+                .as(StepVerifier::create)
+                .verifyComplete();
+
+        assertThat(productDetailCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
+        assertThat(productDetailCircuitBreaker.getMetrics().getNumberOfFailedCalls()).isZero();
     }
 
     @Test
     @DisplayName("Should fail fast when circuit is open")
     void shouldFailFastWhenCircuitIsOpen() {
         // Given
-        circuitBreaker.transitionToOpenState();
+        similarIdsCircuitBreaker.transitionToOpenState();
 
         // When
         long startTime = System.currentTimeMillis();
 
-        StepVerifier.create(adapter.getSimilarIds("1"))
+        StepVerifier.create(similarProductIdsRestAdapter.getSimilarIds("1"))
                 .expectError();
 
         long elapsed = System.currentTimeMillis() - startTime;
@@ -112,14 +169,14 @@ class CircuitBreakerTest {
     @DisplayName("Should transition to half-open after wait duration")
     void shouldTransitionToHalfOpenAfterWaitDuration() {
         // Given
-        circuitBreaker.transitionToOpenState();
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
+        similarIdsCircuitBreaker.transitionToOpenState();
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.OPEN);
 
         // When
-        circuitBreaker.transitionToHalfOpenState();
+        similarIdsCircuitBreaker.transitionToHalfOpenState();
 
         // Then
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.HALF_OPEN);
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.HALF_OPEN);
     }
 
     @Test
@@ -131,15 +188,15 @@ class CircuitBreakerTest {
                         .withHeader("Content-Type", "application/json")
                         .withBody("[\"2\", \"3\"]")));
 
-        circuitBreaker.transitionToOpenState();
-        circuitBreaker.transitionToHalfOpenState();
+        similarIdsCircuitBreaker.transitionToOpenState();
+        similarIdsCircuitBreaker.transitionToHalfOpenState();
 
         // When
-        StepVerifier.create(adapter.getSimilarIds("1"))
+        StepVerifier.create(similarProductIdsRestAdapter.getSimilarIds("1"))
                 .expectNextCount(1)
                 .verifyComplete();
 
         // Then
-        assertThat(circuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
+        assertThat(similarIdsCircuitBreaker.getState()).isEqualTo(CircuitBreaker.State.CLOSED);
     }
 }
