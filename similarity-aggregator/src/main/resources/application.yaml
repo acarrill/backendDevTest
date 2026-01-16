@@ -19,24 +19,40 @@ resilience4j:
   circuitbreaker:
     instances:
       similarIds:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
+        registerHealthIndicator: true
+        slidingWindowSize: 100
+        minimumNumberOfCalls: 20
         failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 5
         slowCallDurationThreshold: 2s
         slowCallRateThreshold: 80
         ignore-exceptions:
           - com.example.similarityaggregator.domain.exception.ProductNotFoundException
       productDetail:
-        slidingWindowSize: 10
-        minimumNumberOfCalls: 5
+        registerHealthIndicator: true
+        slidingWindowSize: 100
+        minimumNumberOfCalls: 20
         failureRateThreshold: 50
-        waitDurationInOpenState: 10s
-        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 5
         slowCallDurationThreshold: 2s
         slowCallRateThreshold: 80
 
-logging:
-  level:
-    io.github.resilience4j: DEBUG
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,caches
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
