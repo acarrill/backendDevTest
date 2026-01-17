@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <!-- Properties -->
+    <property name="LOG_PATH" value="${LOG_PATH:-logs}"/>
+    <property name="APP_NAME" value="similarity-aggregator"/>
+
+    <!-- Console Pattern -->
+    <property name="CONSOLE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%blue(%15.15thread)] %cyan(%-40.40logger{39}) : %msg%n"/>
+
+    <!-- File Pattern -->
+    <property name="FILE_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{39} : %msg%n"/>
+
+    <!-- Console Appender -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd_HH-mm}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>10</maxHistory>
+            <totalSizeCap>1GB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${FILE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Application Loggers -->
+    <logger name="com.example.similarityaggregator" level="DEBUG"/>
+    <logger name="com.example.similarityaggregator.infrastructure.rest.filter" level="INFO"/>
+
+    <!-- Third Party Loggers -->
+    <logger name="io.github.resilience4j" level="INFO"/>
+    <logger name="org.springframework.web.reactive" level="INFO"/>
+    <logger name="org.springframework.cache" level="DEBUG"/>
+    <logger name="reactor.netty" level="INFO"/>
+
+    <!-- Profiles -->
+
+    <springProfile name="default">
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </root>
+        <logger name="com.example.similarityaggregator" level="INFO"/>
+    </springProfile>
+
+</configuration>

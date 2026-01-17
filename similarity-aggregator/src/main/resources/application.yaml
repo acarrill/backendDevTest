@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: similarity-aggregator
+  cache:
+    type: caffeine
+    enabled: true
+    caffeine:
+      spec: maximumSize=500,expireAfterAccess=60s
+
+server:
+  port: 5000
+
+similar-products:
+  api:
+    base-url: http://localhost:3001
+    timeout: 5s
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      similarIds:
+        registerHealthIndicator: true
+        slidingWindowSize: 50
+        minimumNumberOfCalls: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 5
+        slowCallDurationThreshold: 2s
+        slowCallRateThreshold: 80
+        ignore-exceptions:
+          - com.example.similarityaggregator.domain.exception.ProductNotFoundException
+      productDetail:
+        registerHealthIndicator: true
+        slidingWindowSize: 50
+        minimumNumberOfCalls: 20
+        failureRateThreshold: 50
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 5
+        slowCallDurationThreshold: 2s
+        slowCallRateThreshold: 80
+        ignore-exceptions:
+          - com.example.similarityaggregator.domain.exception.ProductNotFoundException
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,circuitbreakers,caches
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
