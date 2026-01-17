@@ -14,12 +14,11 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.math.BigDecimal;
+import java.time.Duration;
 import java.util.List;
 
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.never;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class GetSimilarProductsServiceTest {
@@ -107,5 +106,39 @@ class GetSimilarProductsServiceTest {
         StepVerifier.create(service.getSimilarProducts(EXISTING_PRODUCT_ID))
                 .expectNext(List.of(product2))
                 .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("Should fetch product details in parallel")
+    void shouldFetchProductDetailsInParallel() {
+        // Given
+        List<String> similarIds = List.of("2", "3", "4");
+        Product p2 = new Product("2", "P2", new BigDecimal("10"), true);
+        Product p3 = new Product("3", "P3", new BigDecimal("20"), true);
+        Product p4 = new Product("4", "P4", new BigDecimal("30"), true);
+
+        when(similarProductIdsPort.getSimilarIds(EXISTING_PRODUCT_ID))
+                .thenReturn(Mono.just(similarIds));
+
+        // We simulate that each call takes 1 second
+        when(productDetailPort.getProductDetail("2"))
+                .thenReturn(Mono.just(p2).delayElement(Duration.ofSeconds(1)));
+        when(productDetailPort.getProductDetail("3"))
+                .thenReturn(Mono.just(p3).delayElement(Duration.ofSeconds(1)));
+        when(productDetailPort.getProductDetail("4"))
+                .thenReturn(Mono.just(p4).delayElement(Duration.ofSeconds(1)));
+
+        // When & Then
+        StepVerifier.withVirtualTime(() -> service.getSimilarProducts(EXISTING_PRODUCT_ID))
+                .expectSubscription()
+                .thenAwait(Duration.ofMillis(1100))
+                .assertNext(products -> {
+                    assert products.size() == 3;
+                    assert products.get(0).id().equals("2");
+                    assert products.get(2).id().equals("4");
+                })
+                .verifyComplete();
+
+        verify(productDetailPort, times(3)).getProductDetail(anyString());
     }
 }
