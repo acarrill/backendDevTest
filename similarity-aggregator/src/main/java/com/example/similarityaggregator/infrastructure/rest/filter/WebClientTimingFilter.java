@@ -1,4 +1,3 @@
-// infrastructure/filter/WebClientTimingFilter.java
 package com.example.similarityaggregator.infrastructure.rest.filter;
 
 import org.slf4j.Logger;

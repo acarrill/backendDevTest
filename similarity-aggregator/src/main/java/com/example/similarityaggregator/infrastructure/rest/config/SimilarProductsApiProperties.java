@@ -1,4 +1,3 @@
-// infrastructure/config/SimilarProductsApiProperties.java
 package com.example.similarityaggregator.infrastructure.rest.config;
 
 import jakarta.validation.constraints.NotBlank;
