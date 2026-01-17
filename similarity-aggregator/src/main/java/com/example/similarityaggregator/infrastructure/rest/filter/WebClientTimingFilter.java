@@ -28,7 +28,7 @@ public class WebClientTimingFilter implements ExchangeFilterFunction {
                 })
                 .doOnError(error -> {
                     long elapsed = System.currentTimeMillis() - startTime;
-                    log.error("✗ {} {} - {} ({}ms)", method, url, error.getMessage(), elapsed);
+                    log.error("✗ {} {} - ({}ms)", method, url, elapsed);
                 });
     }
 }
