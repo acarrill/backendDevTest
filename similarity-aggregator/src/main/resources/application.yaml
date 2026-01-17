@@ -43,14 +43,6 @@ resilience4j:
 
 
 management:
-  observations:
-    http:
-      server:
-        requests:
-          enabled: false
-      client:
-        requests:
-          enabled: false
   endpoints:
     web:
       exposure:
