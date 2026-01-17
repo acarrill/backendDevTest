@@ -1,7 +1,8 @@
-package com.example.similarityaggregator.application.service;
+package com.example.similarityaggregator.unitTest.application.service;
 
 import com.example.similarityaggregator.application.port.out.ProductDetailPort;
 import com.example.similarityaggregator.application.port.out.SimilarProductIdsPort;
+import com.example.similarityaggregator.application.service.GetSimilarProductsService;
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
 import org.junit.jupiter.api.BeforeEach;

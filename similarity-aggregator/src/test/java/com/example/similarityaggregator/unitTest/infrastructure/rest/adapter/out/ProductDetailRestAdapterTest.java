@@ -1,4 +1,4 @@
-package com.example.similarityaggregator.infrastructure.rest.adapter.out;
+package com.example.similarityaggregator.unitTest.infrastructure.rest.adapter.out;
 
 import com.example.similarityaggregator.domain.exception.ProductNotFoundException;
 import com.example.similarityaggregator.domain.model.Product;
