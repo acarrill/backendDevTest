@@ -40,8 +40,8 @@ class GetSimilarProductsServiceTest {
     }
 
     @Test
-    @DisplayName("Should return similar products")
-    void shouldReturnSimilarProducts() {
+    @DisplayName("Should return similar products respecting similarity order")
+    void shouldReturnSimilarProductsInOrder() {
         // Given
         List<String> similarIds = List.of("2", "3");
         Product product2 = new Product("2", "Product 2", new BigDecimal("19.99"), true);
