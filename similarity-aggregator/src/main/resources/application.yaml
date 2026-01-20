@@ -6,6 +6,21 @@ spring:
     enabled: true
     caffeine:
       spec: maximumSize=500,expireAfterAccess=60s
+  reactor:
+    context-propagation: auto
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
 
 server:
   port: 5000
@@ -43,14 +58,11 @@ resilience4j:
 
 
 management:
+  tracing:
+      sampling:
+        probability: 1.0
   observations:
-    http:
-      server:
-        requests:
-          enabled: false
-      client:
-        requests:
-          enabled: false
+    enabled: true
   endpoints:
     web:
       exposure:
@@ -61,9 +73,3 @@ management:
   health:
     circuitbreakers:
       enabled: true
-  metrics:
-    tags:
-      application: ${spring.application.name}
-    distribution:
-      percentiles-histogram:
-        http.server.requests: true

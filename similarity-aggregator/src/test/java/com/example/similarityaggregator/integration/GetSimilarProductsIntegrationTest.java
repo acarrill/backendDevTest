@@ -28,9 +28,6 @@ class GetSimilarProductsIntegrationTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @Autowired
-    private SimilarProductsApiProperties properties;
-
     @BeforeEach
     void setUp() throws IOException {
         mockWebServer = new MockWebServer();

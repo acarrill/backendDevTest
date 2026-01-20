@@ -21,9 +21,8 @@ public class SimilarProductIdsRestAdapter implements SimilarProductIdsPort {
 
     private final WebClient webClient;
 
-    public SimilarProductIdsRestAdapter(WebClient.Builder webClientBuilder,
-                                        @Value("${similar-products.api.base-url}") String baseUrl) {
-        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
+    public SimilarProductIdsRestAdapter(WebClient similarProductsWebClient) {
+        this.webClient = similarProductsWebClient;
     }
 
     @Override

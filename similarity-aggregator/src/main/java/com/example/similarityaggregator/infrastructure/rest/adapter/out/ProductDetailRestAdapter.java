@@ -21,9 +21,8 @@ public class ProductDetailRestAdapter implements ProductDetailPort {
 
     private final WebClient webClient;
 
-    public ProductDetailRestAdapter(WebClient.Builder webClientBuilder,
-                                    @Value("${similar-products.api.base-url}") String baseUrl) {
-        this.webClient = webClientBuilder.baseUrl(baseUrl).build();
+    public ProductDetailRestAdapter(WebClient similarProductsWebClient) {
+        this.webClient = similarProductsWebClient;
     }
 
     @Override
@@ -38,8 +37,8 @@ public class ProductDetailRestAdapter implements ProductDetailPort {
                 .bodyToMono(ProductDetailResponse.class)
                 .map(ProductDetailResponse::toDomain)
                 .doOnNext(product -> log.info("Found product: {}", product.id()))
-                .onErrorResume(WebClientResponseException.NotFound.class,
-                        e -> Mono.error(new ProductNotFoundException(productId)));
+                                .onErrorResume(WebClientResponseException.NotFound.class,
+                                        e -> Mono.error(new ProductNotFoundException(productId)));
     }
 
     public Mono<Product> fallbackProductDetail(String productId, Throwable t) {
