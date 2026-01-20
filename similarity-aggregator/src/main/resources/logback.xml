@@ -1,50 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Choosing the appender via a variable -->
-    <variable name="LOG_APPENDER" value="${APPLICATION_LOG_APPENDER:-JSON_STDOUT}"/>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
 
-    <!-- Disabling unnecessary logger status logs -->
-    <statusListener class="ch.qos.logback.core.status.NopStatusListener"/>
-
-    <!-- Plain console output with OpenTelemetry trace context -->
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>[%d{HH:mm:ss.SSS}] [%level] [trace_id=%X{trace_id} span_id=%X{span_id}] [%logger{10}] - %msg%n</pattern>
-        </encoder>
+    <appender name="OTEL" class="io.opentelemetry.instrumentation.logback.appender.v1_0.OpenTelemetryAppender">
     </appender>
 
-    <!-- JSON output with OpenTelemetry trace context -->
-    <appender name="JSON_STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
-            <providers>
-                <timestamp>
-                    <fieldName>timestamp</fieldName>
-                    <pattern>yyyy-MM-dd HH:mm:ss.SSS</pattern>
-                </timestamp>
-
-                <!-- All MDC fields (includes trace_id, span_id from OpenTelemetry) -->
-                <mdc/>
-
-                <pattern>
-                    <pattern>{"level":"%level","thread":"%thread","logger":"%logger{36}","message":"%message"}</pattern>
-                </pattern>
-
-                <!-- Exception stack traces -->
-                <stackTrace>
-                    <fieldName>stack_trace</fieldName>
-                </stackTrace>
-            </providers>
-        </encoder>
-    </appender>
-
-    <logger name="com.example.similarityaggregator" level="DEBUG"/>
-    <logger name="io.github.resilience4j" level="WARN"/>
-    <logger name="org.springframework" level="WARN"/>
-    <logger name="com.github.tomakehurst.wiremock" level="WARN"/>
-    <logger name="io.opentelemetry" level="WARN"/>
-
-    <!-- Root logger -->
-    <root level="${APPLICATION_LOG_LEVEL:-INFO}">
-        <appender-ref ref="${LOG_APPENDER}"/>
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+        <appender-ref ref="OTEL"/>
     </root>
 </configuration>

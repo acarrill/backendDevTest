@@ -8,19 +8,6 @@ spring:
       spec: maximumSize=500,expireAfterAccess=60s
   reactor:
     context-propagation: auto
-  otlp:
-    metrics:
-      export:
-        url: http://localhost:4318/v1/metrics
-  opentelemetry:
-    tracing:
-      export:
-        otlp:
-          endpoint: http://localhost:4318/v1/traces
-    logging:
-      export:
-        otlp:
-          endpoint: http://localhost:4318/v1/logs
 
 server:
   port: 5000
@@ -58,6 +45,19 @@ resilience4j:
 
 
 management:
+  otlp:
+    metrics:
+      export:
+        url: http://localhost:4318/v1/metrics
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/traces
+    logging:
+      export:
+        otlp:
+          endpoint: http://localhost:4318/v1/logs
   tracing:
       sampling:
         probability: 1.0
